@@ -1,0 +1,5 @@
+ls -l >| 1
+cat /etc/group >| 1
+tr /a-z/ /A-Z/ <| 1 >| 2 3 
+cat -n <| 2
+grep X <| 3

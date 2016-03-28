@@ -21,7 +21,8 @@ void parsing(string s, vector<string> &parsed)
     while (iss >> sub)
     {
         
-        parsed.push_back(sub);
+	//cout << "sub: " << sub << endl;        
+	parsed.push_back(sub);
 
     }
     
@@ -48,47 +49,60 @@ void assigning(vector<string> parsed_vector, struct CommandLine &line)
     
     int i;
     line.command = parsed_vector[0];
-
+    //cout << "command: " << line.command << endl;
+    //cout << "parsed_vector.size(): " << parsed_vector.size() << endl;
     if( parsed_vector.size() > 1)
     {
-                
-                
-        for( i = 1; (parsed_vector[i].compare("<|") != 0) && (parsed_vector[i].compare(">|") != 0) && i < parsed_vector.size(); i++)
-        {
+              
+        i = 1;        
+        while((parsed_vector[i].compare("<|") != 0) && (parsed_vector[i].compare(">|") != 0))
+	{
                     
+		//cout<< "while girdim ve i =  " << parsed_vector[i] << endl; 
+		line.arguments.push_back(parsed_vector[i]);
+		//cout << "arguments = " << line.arguments[i-1] << endl;
+		i++;
+		//cout << "i = " << i << endl;
+		if(i >= (parsed_vector.size()))
+			break;
+		
+		           
+	}
+	
+	//cout <<"i = " << i << endl;
+        if(i < parsed_vector.size())
+	{
+		if(parsed_vector[i].compare("<|") == 0)
+        	{
+		    i++;
+		    line.input_pipe = parsed_vector[i];
+		    i = i + 2;
 
-            line.arguments.push_back(parsed_vector[i]);
-        }
-
-                
-        if(parsed_vector[i].compare("<|") == 0)
-        {
-            i++;
-            line.input_pipe = parsed_vector[i];
-            i = i + 2;
-
                     
-            while( i < parsed_vector.size())
-            {
-                        
-                line.output_pipes.push_back(parsed_vector[i]);
-                i++;
-            }
+		    while( i < parsed_vector.size())
+		    {
+		                
+		        line.output_pipes.push_back(parsed_vector[i]);
+		        i++;
+		    }
                     
                     
-        }
-        else if(parsed_vector[i].compare(">|") == 0)
-        {
-            i++;
-                    
-            while( i < parsed_vector.size())
-            {
-                        
-                line.output_pipes.push_back(parsed_vector[i]);
-                i++;
-            }
-                    
-        }          
+        	}
+		else if(parsed_vector[i].compare(">|") == 0)
+		{
+		    i++;
+		            
+		    while( i < parsed_vector.size())
+		    {
+		                
+		        line.output_pipes.push_back(parsed_vector[i]);
+		        i++;
+		    }
+		            
+		}
+	}       
+        
+         //cout << "cikiyo" << endl;         
                     
     }
     
@@ -251,9 +265,9 @@ void compute(vector<string> input, vector<CommandLine> &commands)
         }
         cout<< endl; 
 
-    } */
+    } 
 
-    /*for(int j = 0; j < pipesForAll.size(); j++)
+    for(int j = 0; j < pipesForAll.size(); j++)
     {
         cout << "pipeID: " << pipesForAll[j].pipeID << " ";
         cout << "fd[0]: " << pipesForAll[j].fd[0] << " ";
@@ -323,7 +337,7 @@ void compute(vector<string> input, vector<CommandLine> &commands)
             }
 
             if (flagForRepeater)
-                continue;
+                exit(0);
 
             // EXEC THE PROCESS
 
@@ -337,7 +351,6 @@ void compute(vector<string> input, vector<CommandLine> &commands)
             char* char_command = new char[ commands[i].command.length() + 1];
             strcpy(char_command, commands[i].command.c_str());
             args[a] = char_command;
-            cout << "char_command" << char_command << endl;
 
             //ARGUMENTS CHAR POINTERLARINA CEVIR
             for(int k = 0; k < commands[i].arguments.size(); k++)
@@ -346,8 +359,6 @@ void compute(vector<string> input, vector<CommandLine> &commands)
                 strcpy(char_arg, commands[i].arguments[k].c_str() );
                 a++;
                 args[a] = char_arg;
-                cout << "char_arg" << char_arg << endl;
-
             }
 
             args[++a] = NULL;
@@ -393,10 +404,10 @@ void reading()
             struct CommandLine command;
             parsing(readline, parsed_vector);
             assigning(parsed_vector, command);
-        
+            //cout<< "Geldi command: " << endl;
             final_commands.push_back(command);
 
-            //cout<< "Geldi" << endl;
+            
             // checks if input pipe is empty. If not, checks if the pipe was pushed the vector before. If not pushes the pipe id to the vector
             if (!(command.input_pipe.empty()))
             {
@@ -425,24 +436,40 @@ void reading()
             }
 
             //checks if the input pipe vector equals to the output pipe vectors. If they are equal, stops reading line( stops the program for now!!! change!!)
-            if (!(input_pipes.empty()) && !(outputpipes.empty()))
-            {
+           
                 //cout << "pipelarım bos degil" << endl;
-                if(input_pipes == outputpipes)
-                {
-                    //cout << "start graph!" << endl;
-                    //COMPUTE FONKSIYONUNU CAGIR ve input_pipes.size() ve final_commands ı compute() a arguman olarak ver!!!!
-                    compute(input_pipes, final_commands);
-                    //FOR THE NEW START CLEAN ALL THE CONTENTS TO PREVENT TO BE WRITTEN ON THE TERMINAL AGAIN
-                    input_pipes.clear();
-                    outputpipes.clear();
-                    final_commands.clear();
-                    parsed_vector.clear();
+		if( input_pipes.size() == 0 && outputpipes.size() == 0)
+		{
+			 //cout << "pipelarım bos degil" << endl;
+			 compute(input_pipes, final_commands);
+		         //FOR THE NEW START CLEAN ALL THE CONTENTS TO PREVENT TO BE WRITTEN ON THE TERMINAL AGAIN
+		         input_pipes.clear();
+		         outputpipes.clear();
+		         final_commands.clear();
+		         parsed_vector.clear();	
+		}
+		else 
+		{
+			 
+			 sort(input_pipes.begin(), input_pipes.end());
+                	 sort(outputpipes.begin(), outputpipes.end());
+		         if(input_pipes == outputpipes)
+		         {
+		            //cout << "start graph!" << endl;
+		            //COMPUTE FONKSIYONUNU CAGIR ve input_pipes.size() ve final_commands ı compute() a arguman olarak ver!!!!
+		            compute(input_pipes, final_commands);
+		            //FOR THE NEW START CLEAN ALL THE CONTENTS TO PREVENT TO BE WRITTEN ON THE TERMINAL AGAIN
+		            input_pipes.clear();
+		            outputpipes.clear();
+		            final_commands.clear();
+		            parsed_vector.clear();
 
-                    
-                }
+		            
+		         }
+		}
+                
              
-            }
+            
            
 
             
